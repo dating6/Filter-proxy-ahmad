@@ -15,53 +15,14 @@
             align-items: center;
             flex-direction: column;
         }
-        
-        /* حاوية التحميل (يلي فيها جملة سعيد) */
-        #loading-container {
-            text-align: center;
-        }
-        
-        /* حاوية النتائج (الأخضر والأحمر) */
-        #results-container {
-            display: none; /* مخفية بالبداية */
-            text-align: center;
-        }
-
-        /* كلاسات الألوان */
-        .text-green {
-            color: #28a745;
-        }
-        .text-red {
-            color: #dc3545;
-        }
-
-        /* تنسيق الخط للنتائج (الأخضر والأحمر) */
-        .result-text {
-            font-size: 26px;
-            font-weight: 700;
-            margin: 10px 0;
-            line-height: 1.4;
-        }
-
-        /* تنسيق الخط لجملة سعيد */
-        .saeed-text {
-            font-size: 24px;
-            font-weight: 500;
-        }
-
-        .spinner { 
-            border: 4px solid #f3f3f3; 
-            border-top: 4px solid #3498db; 
-            border-radius: 50%; 
-            width: 40px; 
-            height: 40px; 
-            animation: spin 1s linear infinite; 
-            margin-top: 20px; 
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
+        #loading-container { text-align: center; }
+        #results-container { display: none; text-align: center; }
+        .text-green { color: #28a745; }
+        .text-red { color: #dc3545; }
+        .result-text { font-size: 26px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
+        .saeed-text { font-size: 24px; font-weight: 500; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -81,8 +42,8 @@
         // --- الروابط الخاصة بك ---
         const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
         const TARGET_URL_PROXY = "https://google.com"; 
-        const API_KEY = "9a30j1-ia8bq4-62sjl1-836307"; // مفتاحك
-        const REDIRECT_DELAY = 5000; // مدة عرض النتيجة قبل التحويل (5 ثواني)
+        const API_KEY = "9a30j1-ia8bq4-62sjl1-836307";
+        const REDIRECT_DELAY = 5000; // 5 ثواني
 
         // --- جلب عناصر الصفحة ---
         const loadingContainer = document.getElementById('loading-container');
@@ -90,20 +51,41 @@
         const proxyTypeEl = document.getElementById('proxy-type');
         const proxyQualityEl = document.getElementById('proxy-quality');
 
-        // --- (نفس كود الفحص "المتساهل" من الرد 16) ---
+        // =================================================================
+        //            *** الكود المصحح يبدأ هنا ***
+        // =================================================================
 
-        (function() {
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    checkProxyStatus(data.ip);
-                })
-                .catch(error => {
-                    console.error("Error fetching IP. Failing open.", error);
-                    window.location.replace(TARGET_URL_CLEAN); 
-                });
-        })();
+        // --- 1. وظيفة عرض النتائج (الجديدة) ---
+        // هذه الوظيفة مسؤولة عن عرض النص والألوان والتحويل
+        function showResults(is_fraud) {
+            // إخفاء حاوية "سعيد"
+            loadingContainer.style.display = 'none';
 
+            if (is_fraud) {
+                // --- حالة البروكسي (أحمر) ---
+                proxyTypeEl.textContent = 'نوع البروكسي : مكشوف نوعا ما';
+                proxyQualityEl.textContent = 'جودة البروكسي : زبالة حاشاك ... رح نمنعك من فتح الرابط';
+                resultsContainer.className = 'text-red'; 
+                resultsContainer.style.display = 'block'; 
+                
+                setTimeout(() => {
+                    window.location.replace(TARGET_URL_PROXY);
+                }, REDIRECT_DELAY);
+
+            } else {
+                // --- حالة النظيف (أخضر) ---
+                proxyTypeEl.textContent = 'نوع البروكسي : ريزيدنتال يا كبير';
+                proxyQualityEl.textContent = 'جودة البروكسي : نظيف اموررو رواق.';
+                resultsContainer.className = 'text-green'; 
+                resultsContainer.style.display = 'block'; 
+
+                setTimeout(() => {
+                    window.location.replace(TARGET_URL_CLEAN);
+                }, REDIRECT_DELAY);
+            }
+        }
+
+        // --- 2. وظيفة فحص البروكسي (معدلة) ---
         function checkProxyStatus(visitor_ip) {
             const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
 
@@ -113,50 +95,41 @@
                     let is_fraud = false;
                     
                     if (data.status === 'ok' && data[visitor_ip]) {
-                        if (data[visitor_ip].proxy === 'yes') {
-                            is_fraud = true;
-                        }
-                        if (data[visitor_ip].type === 'VPN') {
+                        if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
                             is_fraud = true;
                         }
                     } else if (data.status === 'error') {
                         console.error("API Error:", data.message);
-                        is_fraud = false; 
+                        is_fraud = false; // "متساهل" - اعتبره نظيفاً إذا فشل الـ API
                     }
-
-                    // --- 3. المنطق الجديد: عرض النتائج ثم التحويل ---
                     
-                    // إخفاء حاوية "سعيد"
-                    loadingContainer.style.display = 'none';
-
-                    if (is_fraud) {
-                        // --- حالة البروكسي (أحمر) ---
-                        proxyTypeEl.textContent = 'نوع البروكسي : مكشوف نوعا ما';
-                        proxyQualityEl.textContent = 'جودة البروكسي : زبالة حاشاك ... رح نمنعك من فتح الرابط';
-                        resultsContainer.className = 'text-red'; 
-                        resultsContainer.style.display = 'block'; 
-                        
-                        setTimeout(() => {
-                            window.location.replace(TARGET_URL_PROXY);
-                        }, REDIRECT_DELAY);
-
-                    } else {
-                        // --- حالة النظيف (أخضر) ---
-                        proxyTypeEl.textContent = 'نوع البروكسي : ريزيدنتال يا كبير';
-                        proxyQualityEl.textContent = 'جودة البروكسي : نظيف اموررو رواق.';
-                        resultsContainer.className = 'text-green'; 
-                        resultsContainer.style.display = 'block'; 
-
-                        setTimeout(() => {
-                            window.location.replace(TARGET_URL_CLEAN);
-                        }, REDIRECT_DELAY);
-                    }
+                    // --- استدعاء وظيفة عرض النتائج ---
+                    showResults(is_fraud);
                 })
                 .catch(error => {
+                    // "متساهل" - اعتبره نظيفاً إذا فشل الاتصال
                     console.error("Error checking proxy. Failing open.", error);
-                    window.location.replace(TARGET_URL_CLEAN); 
+                    // *** هذا هو التصحيح ***
+                    // بدلاً من التحويل الفوري، نعرض النتيجة الخضراء
+                    showResults(false); 
                 });
         }
+
+        // --- 3. الكود الرئيسي (معدل) ---
+        (function() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    checkProxyStatus(data.ip);
+                })
+                .catch(error => {
+                    // "متساهل" - اعتبره نظيفاً إذا فشل جلب الـ IP
+                    console.error("Error fetching IP. Failing open.", error);
+                    // *** هذا هو التصحيح ***
+                    // بدلاً من التحويل الفوري، نعرض النتيجة الخضراء
+                    showResults(false); 
+                });
+        })();
     </script>
 
 </body>
