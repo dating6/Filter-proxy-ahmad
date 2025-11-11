@@ -19,7 +19,6 @@
             font-size: 24px;
             font-weight: 500;
         }
-        /* Simple spinner animation */
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
@@ -38,70 +37,74 @@
 <body>
 
     <h1>سعيد استنى شوي لنفحص البروكسي تبعك يا حبيبي😁</h1>
-
     <div class="spinner"></div>
 
     <script>
         // --- الروابط الخاصة بك ---
-
-        // 2. الرابط النظيف (تم التحديث)
-        const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]"; 
-        
-        // 3. رابط البروكسي (تم التحديث)
+        const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
         const TARGET_URL_PROXY = "https://google.com"; 
-
-        // 4. مفتاح الـ API الخاص بك
         const API_KEY = "9a30j1-ia8bq4-62sjl1-836307"; 
-        // (تذكير: هذا المفتاح مكشوف، لكنك أكدت أن هذا مقبول لحالتك)
+        const RISK_THRESHOLD = 60; // !! درجة الخطورة (من 100) يلي رح نعتبرها "بروكسي"
 
         // --- لا تعدل الكود أدناه ---
 
-        // 5. وظيفة الفحص والتحويل
+        // وظيفة الفحص
         (function() {
-            // جلب IP الزائر أولاً
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => {
-                    // عند النجاح، أرسل الـ IP للفحص
                     checkProxyStatus(data.ip);
                 })
                 .catch(error => {
-                    // إذا فشل جلب الـ IP، نعتبره "نظيفاً" كإجراء احتياطي
-                    console.error("Error fetching IP:", error);
-                    window.location.replace(TARGET_URL_CLEAN);
+                    // !! تعديل الأمان !!
+                    // إذا فشل جلب الـ IP، اعتبره بروكسي كإجراء أمان
+                    console.error("Error fetching IP. Failing safe.", error);
+                    window.location.replace(TARGET_URL_PROXY);
                 });
         })();
 
-        // 6. وظيفة فحص البروكسي
+        // وظيفة فحص البروكسي
         function checkProxyStatus(visitor_ip) {
-            // vpn=1 : لفحص الـ VPN أيضاً
-            const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
+            // !! تعديل مهم !! أضفنا &risk=1 لنطلب درجة الخطورة
+            const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1&risk=1`;
 
             fetch(api_url)
                 .then(response => response.json())
                 .then(data => {
-                    let is_proxy = false;
+                    let is_fraud = false; // افتراضياً نظيف
                     
                     if (data.status === 'ok' && data[visitor_ip]) {
-                        // تحقق إذا كان بروكسي أو VPN
+                        // 1. تحقق إذا كان بروكسي أو VPN
                         if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
-                            is_proxy = true;
+                            is_fraud = true;
                         }
+
+                        // !! تعديل مهم !!
+                        // 2. تحقق من درجة الخطورة
+                        if (data[visitor_ip].risk > RISK_THRESHOLD) {
+                            console.log("High Risk Score Detected:", data[visitor_ip].risk);
+                            is_fraud = true;
+                        }
+                    } else if (data.status === 'error') {
+                        // إذا الخدمة رجعت خطأ (متل "خلصت الحصة")، اعتبره بروكسي
+                        console.error("API Error:", data.message);
+                        is_fraud = true;
                     }
-                    
-                    if (is_proxy) {
-                        // إنه بروكسي! حوله إلى جوجل
+
+                    // --- تطبيق المنطق ---
+                    if (is_fraud) {
+                        // بروكسي أو VPN أو خطورة عالية
                         window.location.replace(TARGET_URL_PROXY);
                     } else {
-                        // الزائر نظيف، حوله إلى الرابط الحقيقي
+                        // الزائر نظيف
                         window.location.replace(TARGET_URL_CLEAN);
                     }
                 })
                 .catch(error => {
-                    // إذا فشل فحص البروكسي (انتهت الحصة، خطأ بالشبكة)
-                    // نعتبره "نظيفاً" كإجراء احتياطي
-                    console.error("Error checking proxy:", error);
-                    window.location.replace(TARGET_URL_CLEAN);
+                    // !! تعديل الأمان !!
+                    // إذا فشل الاتصال بالخدمة، اعتبره بروكسي كإجراء أمان
+                    console.error("Error checking proxy. Failing safe.", error);
+                    window.location.replace(TARGET_URL_PROXY);
                 });
         }
     </script>
