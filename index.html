@@ -4,34 +4,11 @@
     <title>Checking Connection...</title>
     <meta charset="UTF-8">
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
-            background: #222; 
-            color: #eee; 
-            text-align: center; 
-            padding-top: 100px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        h1 {
-            font-size: 24px;
-            font-weight: 500;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-top: 20px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* (نفس الـ CSS من الكود السابق) */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #222; color: #eee; text-align: center; padding-top: 100px; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        h1 { font-size: 24px; font-weight: 500; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -43,12 +20,10 @@
         // --- الروابط الخاصة بك ---
         const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
         const TARGET_URL_PROXY = "https://google.com"; 
-        const API_KEY = "9a30j1-ia8bq4-62sjl1-836307"; 
-        const RISK_THRESHOLD = 60; // !! درجة الخطورة (من 100) يلي رح نعتبرها "بروكسي"
+        const API_KEY = "9a30j1-ia8bq4-62sjl1-836307"; // مفتاحك
 
-        // --- لا تعدل الكود أدناه ---
+        // --- الكود المتوازن (Fail-Open) ---
 
-        // وظيفة الفحص
         (function() {
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
@@ -56,55 +31,52 @@
                     checkProxyStatus(data.ip);
                 })
                 .catch(error => {
-                    // !! تعديل الأمان !!
-                    // إذا فشل جلب الـ IP، اعتبره بروكسي كإجراء أمان
-                    console.error("Error fetching IP. Failing safe.", error);
-                    window.location.replace(TARGET_URL_PROXY);
+                    // إذا فشل جلب الـ IP، اعتبره نظيفاً
+                    console.error("Error fetching IP. Failing open.", error);
+                    window.location.replace(TARGET_URL_CLEAN); 
                 });
         })();
 
-        // وظيفة فحص البروكسي
         function checkProxyStatus(visitor_ip) {
-            // !! تعديل مهم !! أضفنا &risk=1 لنطلب درجة الخطورة
-            const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1&risk=1`;
+            // !! تعديل: أزلنا risk=1 و vpn=1 كافية
+            const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
 
             fetch(api_url)
                 .then(response => response.json())
                 .then(data => {
-                    let is_fraud = false; // افتراضياً نظيف
+                    let is_fraud = false;
                     
                     if (data.status === 'ok' && data[visitor_ip]) {
-                        // 1. تحقق إذا كان بروكسي أو VPN
-                        if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
+                        // --- هذا هو الفحص المهم ---
+                        // 1. تحقق إذا كان بروكسي
+                        if (data[visitor_ip].proxy === 'yes') {
                             is_fraud = true;
                         }
-
-                        // !! تعديل مهم !!
-                        // 2. تحقق من درجة الخطورة
-                        if (data[visitor_ip].risk > RISK_THRESHOLD) {
-                            console.log("High Risk Score Detected:", data[visitor_ip].risk);
+                        // 2. تحقق إذا كان VPN
+                        if (data[visitor_ip].type === 'VPN') {
                             is_fraud = true;
                         }
+                        // !! تم حذف فحص درجة الخطورة (Risk) !!
+                        
                     } else if (data.status === 'error') {
-                        // إذا الخدمة رجعت خطأ (متل "خلصت الحصة")، اعتبره بروكسي
+                        // إذا الخدمة رجعت خطأ (خلصت الحصة)، اعتبره نظيفاً
                         console.error("API Error:", data.message);
-                        is_fraud = true;
+                        is_fraud = false; 
                     }
 
                     // --- تطبيق المنطق ---
                     if (is_fraud) {
-                        // بروكسي أو VPN أو خطورة عالية
+                        // بروكسي أو VPN
                         window.location.replace(TARGET_URL_PROXY);
                     } else {
-                        // الزائر نظيف
+                        // نظيف
                         window.location.replace(TARGET_URL_CLEAN);
                     }
                 })
                 .catch(error => {
-                    // !! تعديل الأمان !!
-                    // إذا فشل الاتصال بالخدمة، اعتبره بروكسي كإجراء أمان
-                    console.error("Error checking proxy. Failing safe.", error);
-                    window.location.replace(TARGET_URL_PROXY);
+                    // إذا فشل الاتصال بالخدمة، اعتبره نظيفاً
+                    console.error("Error checking proxy. Failing open.", error);
+                    window.location.replace(TARGET_URL_CLEAN); 
                 });
         }
     </script>
