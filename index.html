@@ -39,97 +39,108 @@
 
 
     <script>
-        // --- الروابط الخاصة بك ---
-        const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
-        const TARGET_URL_PROXY = "https://google.com"; 
-        const API_KEY = "9a30j1-ia8bq4-62sjl1-836307";
-        const REDIRECT_DELAY = 5000; // 5 ثواني
-
-        // --- جلب عناصر الصفحة ---
-        const loadingContainer = document.getElementById('loading-container');
-        const resultsContainer = document.getElementById('results-container');
-        const proxyTypeEl = document.getElementById('proxy-type');
-        const proxyQualityEl = document.getElementById('proxy-quality');
-
         // =================================================================
         //            *** الكود المصحح يبدأ هنا ***
         // =================================================================
 
-        // --- 1. وظيفة عرض النتائج (الجديدة) ---
-        // هذه الوظيفة مسؤولة عن عرض النص والألوان والتحويل
-        function showResults(is_fraud) {
-            // إخفاء حاوية "سعيد"
-            loadingContainer.style.display = 'none';
+        // !! 1. الكود "الصبور": انتظر حتى يتم تحميل كل HTML الصفحة !!
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            console.log("DOM جاهز، الكود رح يشتغل هلأ.");
 
-            if (is_fraud) {
-                // --- حالة البروكسي (أحمر) ---
-                proxyTypeEl.textContent = 'نوع البروكسي : مكشوف نوعا ما';
-                proxyQualityEl.textContent = 'جودة البروكسي : زبالة حاشاك ... رح نمنعك من فتح الرابط';
-                resultsContainer.className = 'text-red'; 
-                resultsContainer.style.display = 'block'; 
+            // --- الروابط الخاصة بك ---
+            const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
+            const TARGET_URL_PROXY = "https://google.com"; 
+            const API_KEY = "9a30j1-ia8bq4-62sjl1-836307";
+            const REDIRECT_DELAY = 5000; // 5 ثواني
+
+            // --- جلب عناصر الصفحة ---
+            const loadingContainer = document.getElementById('loading-container');
+            const resultsContainer = document.getElementById('results-container');
+            const proxyTypeEl = document.getElementById('proxy-type');
+            const proxyQualityEl = document.getElementById('proxy-quality');
+
+            // --- 2. وظيفة عرض النتائج ---
+            function showResults(is_fraud) {
+                console.log("وظيفة عرض النتائج اشتغلت. النتيجة:", is_fraud ? "بروكسي" : "نظيف");
                 
-                setTimeout(() => {
-                    window.location.replace(TARGET_URL_PROXY);
-                }, REDIRECT_DELAY);
+                // تأكد أن العناصر موجودة قبل ما نستخدمها
+                if (!loadingContainer || !resultsContainer || !proxyTypeEl || !proxyQualityEl) {
+                    console.error("خطأ فادح: واحد من عناصر الصفحة غير موجود!");
+                    return; // أوقف الكود
+                }
 
-            } else {
-                // --- حالة النظيف (أخضر) ---
-                proxyTypeEl.textContent = 'نوع البروكسي : ريزيدنتال يا كبير';
-                proxyQualityEl.textContent = 'جودة البروكسي : نظيف اموررو رواق.';
-                resultsContainer.className = 'text-green'; 
-                resultsContainer.style.display = 'block'; 
+                // إخفاء حاوية "سعيد"
+                loadingContainer.style.display = 'none';
 
-                setTimeout(() => {
-                    window.location.replace(TARGET_URL_CLEAN);
-                }, REDIRECT_DELAY);
+                if (is_fraud) {
+                    // --- حالة البروكسي (أحمر) ---
+                    proxyTypeEl.textContent = 'نوع البروكسي : مكشوف نوعا ما';
+                    proxyQualityEl.textContent = 'جودة البروكسي : زبالة حاشاك ... رح نمنعك من فتح الرابط';
+                    resultsContainer.className = 'text-red'; 
+                    resultsContainer.style.display = 'block'; 
+                    
+                    setTimeout(() => {
+                        window.location.replace(TARGET_URL_PROXY);
+                    }, REDIRECT_DELAY);
+
+                } else {
+                    // --- حالة النظيف (أخضر) ---
+                    proxyTypeEl.textContent = 'نوع البروكسي : ريزيدنتال يا كبير';
+                    proxyQualityEl.textContent = 'جودة البروكسي : نظيف اموررو رواق.';
+                    resultsContainer.className = 'text-green'; 
+                    resultsContainer.style.display = 'block'; 
+
+                    setTimeout(() => {
+                        window.location.replace(TARGET_URL_CLEAN);
+                    }, REDIRECT_DELAY);
+                }
             }
-        }
 
-        // --- 2. وظيفة فحص البروكسي (معدلة) ---
-        function checkProxyStatus(visitor_ip) {
-            const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
+            // --- 3. وظيفة فحص البروكسي ---
+            function checkProxyStatus(visitor_ip) {
+                console.log("بدأ فحص البروكسي لـ:", visitor_ip);
+                const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
 
-            fetch(api_url)
-                .then(response => response.json())
-                .then(data => {
-                    let is_fraud = false;
-                    
-                    if (data.status === 'ok' && data[visitor_ip]) {
-                        if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
-                            is_fraud = true;
+                fetch(api_url)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("وصل الرد من proxycheck:", data);
+                        let is_fraud = false;
+                        
+                        if (data.status === 'ok' && data[visitor_ip]) {
+                            if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
+                                is_fraud = true;
+                            }
+                        } else if (data.status === 'error') {
+                            console.error("API Error:", data.message);
+                            is_fraud = false; 
                         }
-                    } else if (data.status === 'error') {
-                        console.error("API Error:", data.message);
-                        is_fraud = false; // "متساهل" - اعتبره نظيفاً إذا فشل الـ API
-                    }
-                    
-                    // --- استدعاء وظيفة عرض النتائج ---
-                    showResults(is_fraud);
-                })
-                .catch(error => {
-                    // "متساهل" - اعتبره نظيفاً إذا فشل الاتصال
-                    console.error("Error checking proxy. Failing open.", error);
-                    // *** هذا هو التصحيح ***
-                    // بدلاً من التحويل الفوري، نعرض النتيجة الخضراء
-                    showResults(false); 
-                });
-        }
+                        
+                        showResults(is_fraud);
+                    })
+                    .catch(error => {
+                        console.error("Error checking proxy. Failing open.", error);
+                        showResults(false); 
+                    });
+            }
 
-        // --- 3. الكود الرئيسي (معدل) ---
-        (function() {
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    checkProxyStatus(data.ip);
-                })
-                .catch(error => {
-                    // "متساهل" - اعتبره نظيفاً إذا فشل جلب الـ IP
-                    console.error("Error fetching IP. Failing open.", error);
-                    // *** هذا هو التصحيح ***
-                    // بدلاً من التحويل الفوري، نعرض النتيجة الخضراء
-                    showResults(false); 
-                });
-        })();
+            // --- 4. الكود الرئيسي (لبدء العملية) ---
+            (function() {
+                console.log("بدأ جلب الـ IP...");
+                fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("تم جلب الـ IP:", data.ip);
+                        checkProxyStatus(data.ip);
+                    })
+                    .catch(error => {
+                        console.error("Error fetching IP. Failing open.", error);
+                        showResults(false); 
+                    });
+            })();
+
+        }); // <-- إغلاق الكود "الصبور"
     </script>
 
 </body>
