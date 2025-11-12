@@ -39,19 +39,13 @@
 
 
     <script>
-        // =================================================================
-        //            *** الكود المصحح يبدأ هنا ***
-        // =================================================================
-
-        // !! 1. الكود "الصبور": انتظر حتى يتم تحميل كل HTML الصفحة !!
+        // !! انتظر حتى يتم تحميل كل HTML الصفحة !!
         document.addEventListener('DOMContentLoaded', function() {
             
-            console.log("DOM جاهز، الكود رح يشتغل هلأ.");
-
             // --- الروابط الخاصة بك ---
-            const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=426377&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
+            const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
             const TARGET_URL_PROXY = "https://google.com"; 
-            const API_KEY = "9a30j1-ia8bq4-62sjl1-836307";
+            const API_KEY = "BAD70C7243AAF3B2AB6F27676CB88A8B"; // مفتاحك الجديد
             const REDIRECT_DELAY = 5000; // 5 ثواني
 
             // --- جلب عناصر الصفحة ---
@@ -60,61 +54,45 @@
             const proxyTypeEl = document.getElementById('proxy-type');
             const proxyQualityEl = document.getElementById('proxy-quality');
 
-            // --- 2. وظيفة عرض النتائج ---
+            // --- وظيفة عرض النتائج (نفسها) ---
             function showResults(is_fraud) {
-                console.log("وظيفة عرض النتائج اشتغلت. النتيجة:", is_fraud ? "بروكسي" : "نظيف");
-                
-                // تأكد أن العناصر موجودة قبل ما نستخدمها
-                if (!loadingContainer || !resultsContainer || !proxyTypeEl || !proxyQualityEl) {
-                    console.error("خطأ فادح: واحد من عناصر الصفحة غير موجود!");
-                    return; // أوقف الكود
-                }
-
-                // إخفاء حاوية "سعيد"
                 loadingContainer.style.display = 'none';
-
                 if (is_fraud) {
-                    // --- حالة البروكسي (أحمر) ---
                     proxyTypeEl.textContent = 'نوع البروكسي : مكشوف نوعا ما';
                     proxyQualityEl.textContent = 'جودة البروكسي : زبالة حاشاك ... رح نمنعك من فتح الرابط';
                     resultsContainer.className = 'text-red'; 
                     resultsContainer.style.display = 'block'; 
-                    
-                    setTimeout(() => {
-                        window.location.replace(TARGET_URL_PROXY);
-                    }, REDIRECT_DELAY);
-
+                    setTimeout(() => { window.location.replace(TARGET_URL_PROXY); }, REDIRECT_DELAY);
                 } else {
-                    // --- حالة النظيف (أخضر) ---
                     proxyTypeEl.textContent = 'نوع البروكسي : ريزيدنتال يا كبير';
                     proxyQualityEl.textContent = 'جودة البروكسي : نظيف اموررو رواق.';
                     resultsContainer.className = 'text-green'; 
                     resultsContainer.style.display = 'block'; 
-
-                    setTimeout(() => {
-                        window.location.replace(TARGET_URL_CLEAN);
-                    }, REDIRECT_DELAY);
+                    setTimeout(() => { window.location.replace(TARGET_URL_CLEAN); }, REDIRECT_DELAY);
                 }
             }
 
-            // --- 3. وظيفة فحص البروكسي ---
+            // --- 2. وظيفة فحص البروكسي (معدلة لـ is_proxy المباشر) ---
             function checkProxyStatus(visitor_ip) {
                 console.log("بدأ فحص البروكسي لـ:", visitor_ip);
-                const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
+                const api_url = `https://api.ip2location.io/?key=${API_KEY}&ip=${visitor_ip}&format=json`;
 
                 fetch(api_url)
                     .then(response => response.json())
                     .then(data => {
-                        console.log("وصل الرد من proxycheck:", data);
-                        let is_fraud = false;
+                        console.log("وصل الرد من ip2location:", data);
                         
-                        if (data.status === 'ok' && data[visitor_ip]) {
-                            if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
+                        let is_fraud = false;
+
+                        if (data.error) {
+                            console.error("IP2Location API Error:", data.error.error_message);
+                            is_fraud = false; // "متساهل"
+                        
+                        } else {
+                            // --- !! الفحص "المباشر" بناءً على اكتشافك !! ---
+                            if (data.is_proxy === true) {
                                 is_fraud = true;
                             }
-                        } else if (data.status === 'error') {
-                            console.error("API Error:", data.message);
-                            is_fraud = false; 
                         }
                         
                         showResults(is_fraud);
@@ -125,13 +103,12 @@
                     });
             }
 
-            // --- 4. الكود الرئيسي (لبدء العملية) ---
+
+            // --- 3. الكود الرئيسي (لبدء العملية - نفسه) ---
             (function() {
-                console.log("بدأ جلب الـ IP...");
                 fetch('https://api.ipify.org?format=json')
                     .then(response => response.json())
                     .then(data => {
-                        console.log("تم جلب الـ IP:", data.ip);
                         checkProxyStatus(data.ip);
                     })
                     .catch(error => {
@@ -140,7 +117,7 @@
                     });
             })();
 
-        }); // <-- إغلاق الكود "الصبور"
+        });
     </script>
 
 </body>
