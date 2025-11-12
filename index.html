@@ -17,8 +17,12 @@
         }
         #loading-container { text-align: center; }
         #results-container { display: none; text-align: center; }
+        
+        /* الألوان */
         .text-green { color: #28a745; }
         .text-red { color: #dc3545; }
+        .text-orange { color: #fd7e14; } /* !! لون الخطأ الجديد !! */
+
         .result-text { font-size: 26px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
         .saeed-text { font-size: 24px; font-weight: 500; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
@@ -42,10 +46,12 @@
         // !! انتظر حتى يتم تحميل كل HTML الصفحة !!
         document.addEventListener('DOMContentLoaded', function() {
             
+            console.log("DOM جاهز، الكود رح يشتغل هلأ.");
+
             // --- الروابط الخاصة بك ---
             const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
             const TARGET_URL_PROXY = "https://google.com"; 
-            const API_KEY = "BAD70C7243AAF3B2AB6F27676CB88A8B"; // مفتاحك الجديد
+            const API_KEY = "9a30j1-ia8bq4-62sjl1-836307"; // مفتاح proxycheck.io
             const REDIRECT_DELAY = 5000; // 5 ثواني
 
             // --- جلب عناصر الصفحة ---
@@ -54,9 +60,24 @@
             const proxyTypeEl = document.getElementById('proxy-type');
             const proxyQualityEl = document.getElementById('proxy-quality');
 
-            // --- وظيفة عرض النتائج (نفسها) ---
-            function showResults(is_fraud) {
+            // --- !! 1. وظيفة الخطأ الجديدة !! ---
+            // هذه الوظيفة تظهر رسالة خطأ وتوقف كل شيء
+            function showResultsError() {
+                console.error("حدث خطأ في الفحص. لن يتم التحويل.");
                 loadingContainer.style.display = 'none';
+                
+                proxyTypeEl.textContent = 'خطأ في الفحص';
+                proxyQualityEl.textContent = 'لم نتمكن من التحقق من اتصالك. لن يتم تحويلك.';
+                resultsContainer.className = 'text-orange'; // تطبيق اللون البرتقالي
+                resultsContainer.style.display = 'block'; 
+                // لا يوجد تحويل (No Redirect)
+            }
+
+            // --- 2. وظيفة عرض النتائج (نظيفة أو بروكسي) ---
+            function showResults(is_fraud) {
+                console.log("النتيجة:", is_fraud ? "بروكسي" : "نظيف");
+                loadingContainer.style.display = 'none';
+
                 if (is_fraud) {
                     proxyTypeEl.textContent = 'نوع البروكسي : مكشوف نوعا ما';
                     proxyQualityEl.textContent = 'جودة البروكسي : زبالة حاشاك ... رح نمنعك من فتح الرابط';
@@ -72,52 +93,56 @@
                 }
             }
 
-            // --- 2. وظيفة فحص البروكسي (معدلة لـ is_proxy المباشر) ---
+            // --- 3. وظيفة فحص البروكسي (معدلة للأمان) ---
             function checkProxyStatus(visitor_ip) {
                 console.log("بدأ فحص البروكسي لـ:", visitor_ip);
-                const api_url = `https://api.ip2location.io/?key=${API_KEY}&ip=${visitor_ip}&format=json`;
+                const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
 
                 fetch(api_url)
                     .then(response => response.json())
                     .then(data => {
-                        console.log("وصل الرد من ip2location:", data);
-                        
+                        console.log("وصل الرد من proxycheck:", data);
                         let is_fraud = false;
-
-                        if (data.error) {
-                            console.error("IP2Location API Error:", data.error.error_message);
-                            is_fraud = false; // "متساهل"
                         
-                        } else {
-                            // --- !! الفحص "المباشر" بناءً على اكتشافك !! ---
-                            if (data.is_proxy === true) {
+                        if (data.status === 'ok' && data[visitor_ip]) {
+                            if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
                                 is_fraud = true;
                             }
+                            showResults(is_fraud); // اعرض النتيجة (حمرا أو خضرا)
+
+                        } else if (data.status === 'error') {
+                            // !! التعديل هنا !!
+                            console.error("API Error:", data.message);
+                            showResultsError(); // اعرض رسالة الخطأ البرتقالية
+                        } else {
+                            // حالة غير معروفة
+                            showResultsError();
                         }
-                        
-                        showResults(is_fraud);
                     })
                     .catch(error => {
-                        console.error("Error checking proxy. Failing open.", error);
-                        showResults(false); 
+                        // !! التعديل هنا !!
+                        console.error("Error checking proxy. Failing safe.", error);
+                        showResultsError(); // اعرض رسالة الخطأ البرتقالية
                     });
             }
 
-
-            // --- 3. الكود الرئيسي (لبدء العملية - نفسه) ---
+            // --- 4. الكود الرئيسي (معدل للأمان) ---
             (function() {
+                console.log("بدأ جلب الـ IP...");
                 fetch('https://api.ipify.org?format=json')
                     .then(response => response.json())
                     .then(data => {
+                        console.log("تم جلب الـ IP:", data.ip);
                         checkProxyStatus(data.ip);
                     })
                     .catch(error => {
-                        console.error("Error fetching IP. Failing open.", error);
-                        showResults(false); 
+                        // !! التعديل هنا !!
+                        console.error("Error fetching IP. Failing safe.", error);
+                        showResultsError(); // اعرض رسالة الخطأ البرتقالية
                     });
             })();
 
-        });
+        }); 
     </script>
 
 </body>
