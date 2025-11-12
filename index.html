@@ -1,125 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <title>Checking Connection...</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إلى رورية الغالية ❤️</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
-            background: #222; 
-            color: #eee; 
-            text-align: center; 
-            padding-top: 100px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        /* --- يمكنك تعديل التصميم هنا --- */
+        body {
+            /* لون الخلفية (بنفسجي غامق) */
+            background-color: #1a0033;
+            color: #ffffff;
+            font-family: 'Cairo', 'Arial', sans-serif;
+            overflow: hidden; /* لإخفاء أي سكروول */
+            margin: 0;
+            height: 100vh;
         }
-        #loading-container { text-align: center; }
-        #results-container { display: none; text-align: center; }
-        .text-green { color: #28a745; }
-        .text-red { color: #dc3545; }
-        .text-orange { color: #fd7e14; }
-        .result-text { font-size: 26px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
-        .saeed-text { font-size: 24px; font-weight: 500; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* الحاوية الرئيسية للرسائل */
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* النمط الأساسي للرسائل المتحركة */
+        .message {
+            position: absolute;
+            font-size: 24px; /* حجم الخط */
+            color: #f0e6ff; /* لون الخط (لافندر فاتح) */
+            text-shadow: 0 0 10px #ffcce6; /* توهج وردي حول الخط */
+            white-space: nowrap; /* لمنع الرسالة من الانقسام لسطر جديد */
+            
+            /* تحديد اسم الحركة ومدتها وتكرارها */
+            animation: moveText 20s infinite linear;
+        }
+
+        /* تعريف حركة (keyframes) للنصوص */
+        @keyframes moveText {
+            0%   { transform: translate(100vw, 10vh); opacity: 0; } /* يبدأ من اليمين تماماً، شفاف */
+            10%  { opacity: 1; } /* يظهر */
+            50%  { transform: translate(20vw, 70vh); } /* يتحرك لمنتصف الشاشة */
+            90%  { opacity: 1; } /* يبقى ظاهراً */
+            100% { transform: translate(-100vw, 30vh); opacity: 0; } /* يخرج من اليسار، شفاف */
+        }
+
+        /* هنا نجعل كل رسالة تتحرك بشكل مختلف
+         عن طريق تغيير مدة الحركة (animation-duration)
+         وتأخير البدء (animation-delay)
+        */
+
+        .msg1 {
+            top: 10%;
+            animation-duration: 25s; /* أبطأ */
+            animation-delay: -5s; /* يبدأ بعد 5 ثواني من التحميل */
+        }
+        
+        .msg2 {
+            top: 30%;
+            animation-duration: 18s; /* أسرع */
+            animation-delay: -1s;
+        }
+
+        .msg3 {
+            top: 50%;
+            animation-duration: 22s;
+            animation-delay: -10s;
+        }
+        
+        .msg4 {
+            top: 70%;
+            animation-duration: 20s;
+            animation-delay: -15s;
+        }
+
+        /* رسالة رئيسية ثابتة في المنتصف (اختياري) */
+        .main-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: 700;
+            color: #ff80bf; /* لون وردي فاقع */
+            text-align: center;
+            /* حركة نبض خفيفة */
+            animation: pulse 2.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%   { transform: translate(-50%, -50%) scale(1); }
+            50%  { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
     </style>
 </head>
 <body>
 
-    <div id="loading-container">
-        <h1 class="saeed-text">سعيد يا سعيد استنى شوي لنفحص البروكسي يا حبيبي 😁</h1>
-        <div class="spinner"></div>
-    </div>
-    <div id="results-container">
-        <h2 id="proxy-type" class="result-text"></h2>
-        <h2 id="proxy-quality" class="result-text"></h2>
-    </div>
+    <div class="container">
+    
+        <div class="main-message">
+            إلى حبيبتي رورية
+        </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
-            const TARGET_URL_PROXY = "https://google.com"; 
-            const API_KEY = "9a3qj1-ia8bq4-62sjl1-836307"; // المفتاح الصح (q)
-            const REDIRECT_DELAY = 5000; 
-
-            const loadingContainer = document.getElementById('loading-container');
-            const resultsContainer = document.getElementById('results-container');
-            const proxyTypeEl = document.getElementById('proxy-type');
-            const proxyQualityEl = document.getElementById('proxy-quality');
-
-            function showResultsError(message) {
-                console.error("حدث خطأ في الفحص:", message);
-                loadingContainer.style.display = 'none';
-                proxyTypeEl.textContent = 'خطأ في الفحص';
-                proxyQualityEl.textContent = 'لم نتمكن من التحقق من اتصالك. لن يتم تحويلك.';
-                resultsContainer.className = 'text-orange'; 
-                resultsContainer.style.display = 'block'; 
-            }
-
-            function showResults(is_fraud) {
-                console.log("النتيجة:", is_fraud ? "بروكسي" : "نظيف");
-                loadingContainer.style.display = 'none';
-
-                if (is_fraud) {
-                    proxyTypeEl.textContent = 'نوع البروكسي : مكشوف نوعا ما';
-                    proxyQualityEl.textContent = 'جودة البروكسي : زبالة حاشاك ... رح نمنعك من فتح الرابط';
-                    resultsContainer.className = 'text-red'; 
-                    resultsContainer.style.display = 'block'; 
-                    setTimeout(() => { window.location.replace(TARGET_URL_PROXY); }, REDIRECT_DELAY);
-                } else {
-                    proxyTypeEl.textContent = 'نوع البروكسي : ريزيدنتال يا كبير';
-                    proxyQualityEl.textContent = 'جودة البروكسي : نظيف اموررو رواق.';
-                    resultsContainer.className = 'text-green'; 
-                    resultsContainer.style.display = 'block'; 
-                    setTimeout(() => { window.location.replace(TARGET_URL_CLEAN); }, REDIRECT_DELAY);
-                }
-            }
-
-            function checkProxyStatus(visitor_ip) {
-                // !! --- التعديل هنا --- !!
-                // حذفنا &vpn=1 من الرابط
-                const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}`;
-
-                fetch(api_url)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'ok' && data[visitor_ip]) {
-                            let is_fraud = false;
-                            // !! التعديل هنا !!
-                            // عم نفحص "proxy" بس، لأنه ما طلبنا فحص الـ VPN
-                            if (data[visitor_ip].proxy === 'yes') { 
-                                is_fraud = true;
-                            }
-                            showResults(is_fraud); 
-                        } else if (data.status === 'error') {
-                            console.error("API Error:", data.message);
-                            showResultsError(data.message); 
-                        } else {
-                            showResultsError("رد غير معروف من الـ API");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error checking proxy. Failing safe.", error);
-                        showResultsError(error.message); 
-                    });
-            }
-
-            (function() {
-                fetch('https://api.ipify.org?format=json')
-                    .then(response => response.json())
-                    .then(data => {
-                        checkProxyStatus(data.ip);
-                    })
-                    .catch(error => {
-                        console.error("Error fetching IP. Failing safe.", error);
-                        showResultsError(error.message); 
-                    });
-            })();
-        }); 
-    </script>
+        <div class="message msg1">بحبك كتير يا رورية</div>
+        <div class="message msg2">أنتِ كل دنيتي</div>
+        <div class="message msg3">يا أحلى وردة بحياتي</div>
+        <div class="message msg4">كل عام وأنتِ حبيبتي</div>
+        
+        </div>
 
 </body>
 </html>
