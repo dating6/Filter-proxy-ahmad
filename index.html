@@ -19,7 +19,7 @@
         #results-container { display: none; text-align: center; }
         .text-green { color: #28a745; }
         .text-red { color: #dc3545; }
-        .text-orange { color: #fd7e14; } /* لون الخطأ */
+        .text-orange { color: #fd7e14; }
         .result-text { font-size: 26px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
         .saeed-text { font-size: 24px; font-weight: 500; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
@@ -42,10 +42,7 @@
             
             const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
             const TARGET_URL_PROXY = "https://google.com"; 
-            
-            // !! --- المفتاح الصحيح (من الصورة) --- !!
-            const API_KEY = "9a30j1-ia8bq4-62sjl1-836307"; // (بحرف q)
-            
+            const API_KEY = "9a3qj1-ia8bq4-62sjl1-836307"; // المفتاح الصح (q)
             const REDIRECT_DELAY = 5000; 
 
             const loadingContainer = document.getElementById('loading-container');
@@ -82,14 +79,18 @@
             }
 
             function checkProxyStatus(visitor_ip) {
-                const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
+                // !! --- التعديل هنا --- !!
+                // حذفنا &vpn=1 من الرابط
+                const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}`;
 
                 fetch(api_url)
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'ok' && data[visitor_ip]) {
                             let is_fraud = false;
-                            if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
+                            // !! التعديل هنا !!
+                            // عم نفحص "proxy" بس، لأنه ما طلبنا فحص الـ VPN
+                            if (data[visitor_ip].proxy === 'yes') { 
                                 is_fraud = true;
                             }
                             showResults(is_fraud); 
