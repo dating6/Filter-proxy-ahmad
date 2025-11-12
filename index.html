@@ -17,12 +17,9 @@
         }
         #loading-container { text-align: center; }
         #results-container { display: none; text-align: center; }
-        
-        /* الألوان */
         .text-green { color: #28a745; }
         .text-red { color: #dc3545; }
         .text-orange { color: #fd7e14; } /* لون الخطأ */
-
         .result-text { font-size: 26px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
         .saeed-text { font-size: 24px; font-weight: 500; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
@@ -35,43 +32,36 @@
         <h1 class="saeed-text">سعيد يا سعيد استنى شوي لنفحص البروكسي يا حبيبي 😁</h1>
         <div class="spinner"></div>
     </div>
-
     <div id="results-container">
         <h2 id="proxy-type" class="result-text"></h2>
         <h2 id="proxy-quality" class="result-text"></h2>
     </div>
 
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- الروابط الخاصة بك ---
             const TARGET_URL_CLEAN = "https://omjw2.bemobtrcks.com/go/aa1580be-1693-445d-800d-1986cbd284c4?bid=[bid]&clickid=[clickid]&campaignid=1092434&campaignname=avg-cpi-camping-filter&siteid=520804&category=software&connection=[connection]&os=[operatingsystem]&device=[device]&browser=[browser]&country=[cc]";
             const TARGET_URL_PROXY = "https://google.com"; 
             
-            // !! --- التصحيح هنا --- !!
-            const API_KEY = "9a3qj1-ia8bq4-62sjl1-836307"; // (بحرف q بدال 0)
+            // !! --- التصحيح الحقيقي هنا --- !!
+            const API_KEY = "9a3qj1-ia8bq4-62sjl1-836307"; // (بحرف q - من الصورة تبعك)
             
-            const REDIRECT_DELAY = 5000; // 5 ثواني
+            const REDIRECT_DELAY = 5000; 
 
-            // --- جلب عناصر الصفحة ---
             const loadingContainer = document.getElementById('loading-container');
             const resultsContainer = document.getElementById('results-container');
             const proxyTypeEl = document.getElementById('proxy-type');
             const proxyQualityEl = document.getElementById('proxy-quality');
 
-            // --- 1. وظيفة الخطأ ---
             function showResultsError(message) {
                 console.error("حدث خطأ في الفحص:", message);
                 loadingContainer.style.display = 'none';
-                
                 proxyTypeEl.textContent = 'خطأ في الفحص';
                 proxyQualityEl.textContent = 'لم نتمكن من التحقق من اتصالك. لن يتم تحويلك.';
                 resultsContainer.className = 'text-orange'; 
                 resultsContainer.style.display = 'block'; 
             }
 
-            // --- 2. وظيفة عرض النتائج ---
             function showResults(is_fraud) {
                 console.log("النتيجة:", is_fraud ? "بروكسي" : "نظيف");
                 loadingContainer.style.display = 'none';
@@ -91,23 +81,19 @@
                 }
             }
 
-            // --- 3. وظيفة فحص البروكسي ---
             function checkProxyStatus(visitor_ip) {
                 const api_url = `https://proxycheck.io/v2/${visitor_ip}?key=${API_KEY}&vpn=1`;
 
                 fetch(api_url)
                     .then(response => response.json())
                     .then(data => {
-                        let is_fraud = false;
-                        
                         if (data.status === 'ok' && data[visitor_ip]) {
+                            let is_fraud = false;
                             if (data[visitor_ip].proxy === 'yes' || data[visitor_ip].type === 'VPN') {
                                 is_fraud = true;
                             }
                             showResults(is_fraud); 
-
                         } else if (data.status === 'error') {
-                            // هاد الخطأ كان عم يصير بسبب المفتاح الغلط
                             console.error("API Error:", data.message);
                             showResultsError(data.message); 
                         } else {
@@ -120,7 +106,6 @@
                     });
             }
 
-            // --- 4. الكود الرئيسي ---
             (function() {
                 fetch('https://api.ipify.org?format=json')
                     .then(response => response.json())
@@ -132,7 +117,6 @@
                         showResultsError(error.message); 
                     });
             })();
-
         }); 
     </script>
 
