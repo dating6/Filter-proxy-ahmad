@@ -10,75 +10,71 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- يمكنك تعديل التصميم هنا --- */
         body {
-            /* لون الخلفية (بنفسجي غامق) */
             background-color: #1a0033;
             color: #ffffff;
             font-family: 'Cairo', 'Arial', sans-serif;
-            overflow: hidden; /* لإخفاء أي سكروول */
+            overflow: hidden;
             margin: 0;
             height: 100vh;
         }
 
-        /* الحاوية الرئيسية للرسائل */
         .container {
             position: relative;
             width: 100%;
             height: 100%;
         }
 
-        /* النمط الأساسي للرسائل المتحركة */
         .message {
             position: absolute;
-            font-size: 24px; /* حجم الخط */
-            color: #f0e6ff; /* لون الخط (لافندر فاتح) */
-            text-shadow: 0 0 10px #ffcce6; /* توهج وردي حول الخط */
-            white-space: nowrap; /* لمنع الرسالة من الانقسام لسطر جديد */
+            font-size: 24px;
+            color: #f0e6ff;
+            text-shadow: 0 0 10px #ffcce6;
+            white-space: nowrap;
             
-            /* تحديد اسم الحركة ومدتها وتكرارها */
-            animation: moveText 20s infinite linear;
+            /* --- 🌟 هنا تم تغيير اسم الحركة --- */
+            animation: moveTextWave 20s infinite linear;
         }
 
-        /* تعريف حركة (keyframes) للنصوص */
-        @keyframes moveText {
-            0%   { transform: translate(100vw, 10vh); opacity: 0; } /* يبدأ من اليمين تماماً، شفاف */
-            10%  { opacity: 1; } /* يظهر */
-            50%  { transform: translate(20vw, 70vh); } /* يتحرك لمنتصف الشاشة */
-            90%  { opacity: 1; } /* يبقى ظاهراً */
-            100% { transform: translate(-100vw, 30vh); opacity: 0; } /* يخرج من اليسار، شفاف */
+        /* --- 🌟 هذه هي الحركة "المتموجة" الجديدة --- */
+        @keyframes moveTextWave {
+            0%   { transform: translate(100vw, 0vh); opacity: 0; } /* يبدأ من اليمين (نفس المستوى) */
+            10%  { opacity: 1; }
+            25%  { transform: translate(75vw, -5vh); } /* يتحرك يساراً + للأعلى قليلاً */
+            50%  { transform: translate(50vw, 5vh); }  /* يتحرك يساراً + للأسفل قليلاً */
+            75%  { transform: translate(25vw, -5vh); } /* يتحرك يساراً + للأعلى مجدداً */
+            90%  { opacity: 1; }
+            100% { transform: translate(-100vw, 0vh); opacity: 0; } /* يخرج من اليسار (نفس المستوى) */
         }
+        /* ------------------------------------------- */
 
-        /* هنا نجعل كل رسالة تتحرك بشكل مختلف
-         عن طريق تغيير مدة الحركة (animation-duration)
-         وتأخير البدء (animation-delay)
-        */
 
+        /* توزيع الرسائل وتغيير سرعاتها */
         .msg1 {
-            top: 10%;
-            animation-duration: 25s; /* أبطأ */
-            animation-delay: -5s; /* يبدأ بعد 5 ثواني من التحميل */
+            top: 20%; /* خط الأساس الأول */
+            animation-duration: 25s;
+            animation-delay: -5s;
         }
         
         .msg2 {
-            top: 30%;
-            animation-duration: 18s; /* أسرع */
+            top: 40%; /* خط الأساس الثاني */
+            animation-duration: 18s;
             animation-delay: -1s;
         }
 
         .msg3 {
-            top: 50%;
+            top: 60%; /* خط الأساس الثالث */
             animation-duration: 22s;
             animation-delay: -10s;
         }
         
         .msg4 {
-            top: 70%;
+            top: 80%; /* خط الأساس الرابع */
             animation-duration: 20s;
             animation-delay: -15s;
         }
 
-        /* رسالة رئيسية ثابتة في المنتصف (اختياري) */
+        /* الرسالة الرئيسية الثابتة في المنتصف */
         .main-message {
             position: absolute;
             top: 50%;
@@ -86,9 +82,8 @@
             transform: translate(-50%, -50%);
             font-size: 40px;
             font-weight: 700;
-            color: #ff80bf; /* لون وردي فاقع */
+            color: #ff80bf;
             text-align: center;
-            /* حركة نبض خفيفة */
             animation: pulse 2.5s infinite;
         }
 
@@ -108,12 +103,12 @@
             إلى حبيبتي رورية
         </div>
 
-        <div class="message msg1">بحبك كتير يا رورية</div>
-        <div class="message msg2">أنتِ كل دنيتي</div>
-        <div class="message msg3">يا أحلى وردة بحياتي</div>
-        <div class="message msg4">كل عام وأنتِ حبيبتي</div>
+        <div class="message msg1">بحبك يا بشحووورتي</div>
+        <div class="message msg2">تقبريي قلبي رورية 😍😘</div>
+        <div class="message msg3">لك بموووووت فيكي و ربييي😍😘😘💋</div>
+        <div class="message msg4">يا أحلى شي بحياتي</div>
         
-        </div>
+    </div>
 
 </body>
 </html>
